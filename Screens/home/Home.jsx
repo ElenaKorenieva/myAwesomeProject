@@ -124,7 +124,13 @@ export const Home = () => {
         tabBarShowLabel: false,
       })}
     >
-      <MainTab.Screen name="Posts" component={PostsScreen} />
+      <MainTab.Screen
+        name="Posts"
+        component={PostsScreen}
+        options={{
+          title: "Публікації",
+        }}
+      />
       <MainTab.Screen
         name="Create"
         component={CreateScreen}
