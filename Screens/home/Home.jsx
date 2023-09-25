@@ -13,65 +13,6 @@ import ProfileScreen from "../mainScreen/ProfileScreen";
 
 export const Home = () => {
   const navigation = useNavigation();
-  //   return (
-  //     <MainTab.Navigator
-  //       screenOptions={({ route, navigation }) => ({
-  //         headerLeft: () => {
-  //           return (
-  //             <Ionicons
-  //               name="arrow-back"
-  //               size={24}
-  //               color="#212121"
-  //               style={{ marginLeft: 10 }}
-  //               onPress={() => navigation.goBack()}
-  //             />
-  //           );
-  //         },
-  //         headerRight: () => {
-  //           return (
-  //             <Feather
-  //               name="log-out"
-  //               size={24}
-  //               color="#BDBDBD"
-  //               style={{ marginRight: 21 }}
-  //               onPress={() => {
-  //                 logOut();
-  //               }}
-  //             />
-  //           );
-  //         },
-  //         tabBarShowLabel: false,
-  //       })}
-  //     >
-  //       <MainTab.Screen
-  //         options={{
-  //           tabBarIcon: ({ focused, size, color }) => (
-  //             <Ionicons name="grid-outline" size={size} color={color} />
-  //           ),
-  //         }}
-  //         name="Posts"
-  //         component={PostsScreen}
-  //       />
-  //       <MainTab.Screen
-  //         options={{
-  //           tabBarIcon: ({ focused, size, color }) => (
-  //             <Ionicons name="ios-add-sharp" size={size} color={color} />
-  //           ),
-  //         }}
-  //         name="Create"
-  //         component={CreateScreen}
-  //       />
-  //       <MainTab.Screen
-  //         options={{
-  //           tabBarIcon: ({ focused, size, color }) => (
-  //             <Ionicons name="person-outline" size={size} color={color} />
-  //           ),
-  //         }}
-  //         name="Profile"
-  //         component={ProfileScreen}
-  //       />
-  //     </MainTab.Navigator>
-  //   );
 
   return (
     <MainTab.Navigator
