@@ -48,6 +48,10 @@ const CreateScreen = ({ navigation }) => {
     })();
   }, []);
 
+  const resetForm = (e) => {
+    setState(initialState);
+  };
+
   return (
     <ScrollView
       contentContainerStyle={styles.scrollViewContainer}
@@ -93,7 +97,7 @@ const CreateScreen = ({ navigation }) => {
               />
             )}
           </TouchableOpacity>
-          <View style={{ width: "85%" }}>
+          <View style={{ width: "82%" }}>
             {!photo ? (
               <Text style={styles.wrapTitle}>Завантажте фото</Text>
             ) : (
@@ -101,7 +105,7 @@ const CreateScreen = ({ navigation }) => {
             )}
           </View>
 
-          <View style={{ width: "85%" }}>
+          <View style={{ width: "82%" }}>
             <TextInput
               style={styles.input}
               placeholder="Назва..."
@@ -134,7 +138,7 @@ const CreateScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
         <View style={styles.btn_wrp}>
-          <TouchableOpacity onPress={initialState} style={styles.button_delete}>
+          <TouchableOpacity onPress={resetForm} style={styles.button_delete}>
             <Ionicons name={"md-trash-outline"} size={24} color={"#BDBDBD"} />
           </TouchableOpacity>
         </View>
