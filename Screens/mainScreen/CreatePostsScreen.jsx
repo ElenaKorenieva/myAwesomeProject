@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   camera: {
-    height: "90%",
+    height: "70%",
     marginHorizontal: 2,
     borderRadius: 10,
     alignItems: "center",
@@ -215,12 +215,13 @@ const styles = StyleSheet.create({
     borderBottomColor: "#E8E8E8",
   },
   btn_wrp: {
+    justifyContent: "flex-end",
     alignItems: "center",
     position: "sticky",
   },
   button_delete: {
     alignItems: "center",
-    justifyContent: "center",
+    marginTop: 75,
     width: 70,
     height: 40,
     borderRadius: 40,
