@@ -7,16 +7,15 @@ import {
   TextInput,
   ScrollView,
   Dimensions,
+  TouchableOpacity,
 } from "react-native";
 import { Camera } from "expo-camera";
-import { TouchableOpacity } from "react-native-gesture-handler";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
 
 const initialState = {
   photoDescription: "",
   location: "",
-  photo: "",
 };
 
 const CreateScreen = ({ navigation }) => {
@@ -29,6 +28,10 @@ const CreateScreen = ({ navigation }) => {
     const location = await Location.getCurrentPositionAsync();
     console.log("location", location.coords.latitude);
     console.log("location", location.coords.longitude);
+    setState((prev) => ({
+      ...prev,
+      location: `latitude: ${location.coords.latitude}, longitude: ${location.coords.longitude}`,
+    }));
     setPhoto(photo.uri);
     console.log("photo", photo);
   };
@@ -40,6 +43,8 @@ const CreateScreen = ({ navigation }) => {
   const sendPhoto = () => {
     console.log("navigation", navigation);
     navigation.navigate("DefaultScreen", { photo });
+    setState(initialState);
+    setPhoto(null);
   };
 
   useEffect(() => {
@@ -54,6 +59,7 @@ const CreateScreen = ({ navigation }) => {
 
   const resetForm = (e) => {
     setState(initialState);
+    setPhoto(null);
   };
 
   return (
@@ -64,19 +70,16 @@ const CreateScreen = ({ navigation }) => {
       <View style={styles.container}>
         <View style={styles.takePhotoContainer}>
           {photo ? (
-            // <Image
-            //   source={{ uri: photo }}
-            //   style={{
-            //     width: 343,
-            //     height: 200,
-            //     borderRadius: 10,
-            //   }}
-            // />
-            <View />
+            <Image
+              source={{ uri: photo }}
+              style={{
+                width: 343,
+                height: 200,
+                borderRadius: 10,
+              }}
+            />
           ) : (
-            <Camera style={styles.camera} ref={setCamera}>
-              <Text>jskgfjhjhjg</Text>
-            </Camera>
+            <Camera style={styles.camera} ref={setCamera}></Camera>
           )}
           <TouchableOpacity onPress={takePhoto} style={styles.snapContainer}>
             <Image source={btnImage} style={styles.photo_icon} />
@@ -91,7 +94,7 @@ const CreateScreen = ({ navigation }) => {
           )}
         </View>
 
-        <View style={{ width: "82%" }}>
+        <View style={{ width: "90%" }}>
           <TextInput
             style={styles.input}
             placeholder="Назва..."
@@ -103,18 +106,28 @@ const CreateScreen = ({ navigation }) => {
                 photoDescription: value,
               }))
             }
+            editable={photo ? true : false}
+          />
+        </View>
+        <View style={{ width: "90%" }}>
+          <Ionicons
+            name={"location-outline"}
+            size={24}
+            color="#BDBDBD"
+            style={styles.map_svg}
           />
           <TextInput
-            style={styles.input}
+            style={styles.input_map}
             placeholder="Місцевість..."
             placeholderTextColor="#BDBDBD"
-            value={state.location.latitude?.toString()}
+            value={state.location}
             onChangeText={(value) =>
               setState((prev) => ({
                 ...prev,
                 location: value,
               }))
             }
+            editable={photo ? true : false}
           />
         </View>
         <View
@@ -125,8 +138,35 @@ const CreateScreen = ({ navigation }) => {
           }}
         >
           <View>
-            <TouchableOpacity onPress={sendPhoto} style={styles.sendBtn}>
-              <Text style={styles.snapLabel}>Опублікувати</Text>
+            <TouchableOpacity
+              onPress={sendPhoto}
+              style={
+                photo
+                  ? styles.sendBtn
+                  : {
+                      marginTop: 43,
+                      backgroundColor: "#e4e1e1",
+                      paddingTop: 16,
+                      paddingBottom: 16,
+                      borderRadius: 100,
+                      cursor: "pointer",
+                    }
+              }
+              disabled={photo ? false : true}
+            >
+              <Text
+                style={
+                  photo
+                    ? styles.snapLabel
+                    : {
+                        textAlign: "center",
+                        fontSize: 16,
+                        color: "#BDBDBD",
+                      }
+                }
+              >
+                Опублікувати
+              </Text>
             </TouchableOpacity>
           </View>
           <View style={styles.btn_wrp}>
@@ -144,44 +184,31 @@ const screenSize = Dimensions.get("screen");
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingHorizontal: 16,
   },
   scrollViewContainer: {
     minHeight: screenSize.height,
-    justifyContent: "flex-end",
   },
   camera: {
-    width: 300,
-    height: 200,
-    marginHorizontal: 2,
-    borderRadius: 10,
+    height: "100%",
+    width: "100%",
+    justifyContent: "center",
     alignItems: "center",
-    // justifyContent: "flex-start",
-    backgroundColor: "#FFFFFF",
   },
   snap: {
-    color: "#fff",
+    color: "transparent",
   },
   snapContainer: {
     position: "absolute",
-    top: 150,
-    left: 50,
-    zIndex: 10,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "red",
-    width: 50,
-    height: 50,
+    width: 60,
+    height: 60,
   },
   takePhotoContainer: {
-    width: 343,
-    height: 200,
-    marginTop: 32,
-    borderColor: "#fff",
-    borderWidth: 1,
-    borderRadius: 10,
-    backgroundColor: "grey",
-    position: "relative",
+    height: 300,
+    width: "100%",
+    backgroundColor: "lightgray",
+    alignItems: "center",
+    justifyContent: "center",
   },
   sendBtn: {
     height: 51,
@@ -200,8 +227,6 @@ const styles = StyleSheet.create({
   photo_icon: {
     width: 60,
     height: 60,
-    borderColor: "#FF6C00",
-    borderWidth: 1,
   },
   wrapTitle: {
     marginTop: 8,
@@ -219,6 +244,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#E8E8E8",
   },
+  input_map: {
+    marginBottom: 16,
+    paddingLeft: 25,
+    height: 50,
+    paddingVertical: 16,
+    color: "#BDBDBD",
+    fontFamily: "Roboto",
+    fontSize: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E8E8E8",
+  },
   btn_wrp: {
     alignItems: "center",
     position: "sticky",
@@ -226,12 +262,15 @@ const styles = StyleSheet.create({
   button_delete: {
     alignItems: "center",
     justifyContent: "center",
-    // marginTop: 80,
     width: 70,
     height: 40,
     borderRadius: 40,
     backgroundColor: "#efecec",
     margin: 0,
+  },
+  map_svg: {
+    position: "absolute",
+    bottom: 28,
   },
 });
 
