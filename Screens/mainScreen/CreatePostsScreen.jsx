@@ -7,16 +7,15 @@ import {
   TextInput,
   ScrollView,
   Dimensions,
+  TouchableOpacity,
 } from "react-native";
 import { Camera } from "expo-camera";
-import { TouchableOpacity } from "react-native-gesture-handler";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
 
 const initialState = {
   photoDescription: "",
   location: "",
-  photo: "",
 };
 
 const CreateScreen = ({ navigation }) => {
@@ -29,13 +28,23 @@ const CreateScreen = ({ navigation }) => {
     const location = await Location.getCurrentPositionAsync();
     console.log("location", location.coords.latitude);
     console.log("location", location.coords.longitude);
+    setState((prev) => ({
+      ...prev,
+      location: `latitude: ${location.coords.latitude}, longitude: ${location.coords.longitude}`,
+    }));
     setPhoto(photo.uri);
     console.log("photo", photo);
   };
 
+  const btnImage = photo
+    ? require("../../assets/images/Group.png")
+    : require("../../assets/images/Group2.png");
+
   const sendPhoto = () => {
     console.log("navigation", navigation);
     navigation.navigate("DefaultScreen", { photo });
+    setState(initialState);
+    setPhoto(null);
   };
 
   useEffect(() => {
@@ -50,6 +59,7 @@ const CreateScreen = ({ navigation }) => {
 
   const resetForm = (e) => {
     setState(initialState);
+    setPhoto(null);
   };
 
   return (
@@ -58,89 +68,112 @@ const CreateScreen = ({ navigation }) => {
       bounces={false}
     >
       <View style={styles.container}>
-        <Camera style={styles.camera} ref={setCamera}>
+        <View style={styles.takePhotoContainer}>
           {photo ? (
-            <View style={styles.takePhotoContainer}>
-              <Image
-                source={{ uri: photo }}
-                style={{
-                  width: 343,
-                  height: 200,
-                  borderRadius: 10,
-                }}
-              />
-            </View>
+            <Image
+              source={{ uri: photo }}
+              style={{
+                width: 343,
+                height: 200,
+                borderRadius: 10,
+              }}
+            />
           ) : (
-            <View style={styles.takePhotoContainer}>
-              <View
-                style={{
-                  width: 343,
-                  height: 200,
-                  borderRadius: 10,
-                  borderColor: "#fff",
-                  backgroundColor: "rgba(232, 232, 232, 1)",
-                }}
-              ></View>
-            </View>
+            <Camera style={styles.camera} ref={setCamera}></Camera>
           )}
           <TouchableOpacity onPress={takePhoto} style={styles.snapContainer}>
-            {/* <Text style={styles.snap}>SNAP</Text> */}
-            {photo ? (
-              <Image
-                source={require("../../assets/images/Group.png")}
-                style={styles.photo_icon}
-              />
-            ) : (
-              <Image
-                source={require("../../assets/images/Group2.png")}
-                style={styles.photo_icon}
-              />
-            )}
-          </TouchableOpacity>
-          <View style={{ width: "82%" }}>
-            {!photo ? (
-              <Text style={styles.wrapTitle}>Завантажте фото</Text>
-            ) : (
-              <Text style={styles.wrapTitle}>Редагувати фото</Text>
-            )}
-          </View>
-
-          <View style={{ width: "82%" }}>
-            <TextInput
-              style={styles.input}
-              placeholder="Назва..."
-              placeholderTextColor="#BDBDBD"
-              value={state.photoDescription}
-              onChangeText={(value) =>
-                setState((prev) => ({
-                  ...prev,
-                  photoDescription: value,
-                }))
-              }
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Місцевість..."
-              placeholderTextColor="#BDBDBD"
-              value={state.location.latitude?.toString()}
-              onChangeText={(value) =>
-                setState((prev) => ({
-                  ...prev,
-                  location: value,
-                }))
-              }
-            />
-          </View>
-        </Camera>
-        <View>
-          <TouchableOpacity onPress={sendPhoto} style={styles.sendBtn}>
-            <Text style={styles.snapLabel}>Опублікувати</Text>
+            <Image source={btnImage} style={styles.photo_icon} />
           </TouchableOpacity>
         </View>
-        <View style={styles.btn_wrp}>
-          <TouchableOpacity onPress={resetForm} style={styles.button_delete}>
-            <Ionicons name={"md-trash-outline"} size={24} color={"#BDBDBD"} />
-          </TouchableOpacity>
+
+        <View style={{ width: "82%" }}>
+          {!photo ? (
+            <Text style={styles.wrapTitle}>Завантажте фото</Text>
+          ) : (
+            <Text style={styles.wrapTitle}>Редагувати фото</Text>
+          )}
+        </View>
+
+        <View style={{ width: "90%" }}>
+          <TextInput
+            style={styles.input}
+            placeholder="Назва..."
+            placeholderTextColor="#BDBDBD"
+            value={state.photoDescription}
+            onChangeText={(value) =>
+              setState((prev) => ({
+                ...prev,
+                photoDescription: value,
+              }))
+            }
+            editable={photo ? true : false}
+          />
+        </View>
+        <View style={{ width: "90%" }}>
+          <Ionicons
+            name={"location-outline"}
+            size={24}
+            color="#BDBDBD"
+            style={styles.map_svg}
+          />
+          <TextInput
+            style={styles.input_map}
+            placeholder="Місцевість..."
+            placeholderTextColor="#BDBDBD"
+            value={state.location}
+            onChangeText={(value) =>
+              setState((prev) => ({
+                ...prev,
+                location: value,
+              }))
+            }
+            editable={photo ? true : false}
+          />
+        </View>
+        <View
+          style={{
+            flex: 6,
+            justifyContent: "space-between",
+            marginVertical: 16,
+          }}
+        >
+          <View>
+            <TouchableOpacity
+              onPress={sendPhoto}
+              style={
+                photo
+                  ? styles.sendBtn
+                  : {
+                      marginTop: 43,
+                      backgroundColor: "#e4e1e1",
+                      paddingTop: 16,
+                      paddingBottom: 16,
+                      borderRadius: 100,
+                      cursor: "pointer",
+                    }
+              }
+              disabled={photo ? false : true}
+            >
+              <Text
+                style={
+                  photo
+                    ? styles.snapLabel
+                    : {
+                        textAlign: "center",
+                        fontSize: 16,
+                        color: "#BDBDBD",
+                      }
+                }
+              >
+                Опублікувати
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.btn_wrp}>
+            <TouchableOpacity onPress={resetForm} style={styles.button_delete}>
+              <Ionicons name={"md-trash-outline"} size={24} color={"#BDBDBD"} />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </ScrollView>
@@ -151,37 +184,34 @@ const screenSize = Dimensions.get("screen");
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingHorizontal: 16,
   },
   scrollViewContainer: {
     minHeight: screenSize.height,
-    justifyContent: "flex-end",
   },
   camera: {
-    height: "90%",
-    marginHorizontal: 2,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "flex-start",
-    backgroundColor: "#FFFFFF",
-  },
-  snap: {
-    color: "#fff",
-  },
-  snapContainer: {
-    height: 70,
-    borderRadius: 10,
+    height: "100%",
+    width: "100%",
     justifyContent: "center",
     alignItems: "center",
   },
+  snap: {
+    color: "transparent",
+  },
+  snapContainer: {
+    position: "absolute",
+    width: 60,
+    height: 60,
+  },
   takePhotoContainer: {
-    marginTop: 32,
-    borderColor: "#fff",
-    borderWidth: 1,
-    borderRadius: 10,
+    height: 300,
+    width: "100%",
+    backgroundColor: "lightgray",
+    alignItems: "center",
+    justifyContent: "center",
   },
   sendBtn: {
     height: 51,
-    marginTop: 27,
     marginBottom: 16,
     marginHorizontal: 16,
     borderRadius: 100,
@@ -214,6 +244,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#E8E8E8",
   },
+  input_map: {
+    marginBottom: 16,
+    paddingLeft: 25,
+    height: 50,
+    paddingVertical: 16,
+    color: "#BDBDBD",
+    fontFamily: "Roboto",
+    fontSize: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E8E8E8",
+  },
   btn_wrp: {
     alignItems: "center",
     position: "sticky",
@@ -224,8 +265,12 @@ const styles = StyleSheet.create({
     width: 70,
     height: 40,
     borderRadius: 40,
-    backgroundColor: "#f6f6f6",
+    backgroundColor: "#efecec",
     margin: 0,
+  },
+  map_svg: {
+    position: "absolute",
+    bottom: 28,
   },
 });
 

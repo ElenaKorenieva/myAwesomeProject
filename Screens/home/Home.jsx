@@ -16,6 +16,7 @@ export const Home = () => {
 
   return (
     <MainTab.Navigator
+      style={styles.container}
       screenOptions={({ route, navigation }) => ({
         headerLeft: () => {
           return (
@@ -106,5 +107,6 @@ const styles = StyleSheet.create({
     paddingTop: 5,
     borderRadius: 20,
     overflow: "hidden",
+    marginBottom: 10,
   },
 });
