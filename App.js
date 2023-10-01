@@ -1,11 +1,12 @@
 import "react-native-gesture-handler";
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { Provider, useSelector } from "react-redux";
 import { useFonts } from "expo-font";
 
-import { NavigationContainer } from "@react-navigation/native";
-
-import { useRoute } from "./router";
+import { store } from "./redux/store";
+import { useEffect } from "react";
+import { auth } from "./firebase/config";
+import { onAuthStateChanged } from "firebase/auth";
+import Main from "./components/Main.js";
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -14,10 +15,19 @@ export default function App() {
     RobotoBold: require("./assets/fonts/Roboto-Bold.ttf"),
   });
 
-  const routing = useRoute(true);
+  useEffect(() => {}, []);
+
+  // onAuthStateChanged(auth, (user) => {
+  //   setUser(user);
+  // });
+  // onAuthStateChanged((user) => setUser(user));
 
   if (!fontsLoaded) {
     return null;
   }
-  return <NavigationContainer>{routing}</NavigationContainer>;
+  return (
+    <Provider store={store}>
+      <Main />
+    </Provider>
+  );
 }

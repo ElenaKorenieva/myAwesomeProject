@@ -12,6 +12,8 @@ import {
 import { Camera } from "expo-camera";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
+import { db } from "../../firebase/config";
+import { doc, setDoc, collection, addDoc } from "firebase/firestore";
 
 const initialState = {
   photoDescription: "",
@@ -26,14 +28,14 @@ const CreateScreen = ({ navigation }) => {
   const takePhoto = async () => {
     const photo = await camera.takePictureAsync();
     const location = await Location.getCurrentPositionAsync();
-    console.log("location", location.coords.latitude);
-    console.log("location", location.coords.longitude);
+    // console.log("location", location.coords.latitude);
+    // console.log("location", location.coords.longitude);
     setState((prev) => ({
       ...prev,
       location: `latitude: ${location.coords.latitude}, longitude: ${location.coords.longitude}`,
     }));
     setPhoto(photo.uri);
-    console.log("photo", photo);
+    // console.log("photo", photo);
   };
 
   const btnImage = photo
@@ -41,8 +43,9 @@ const CreateScreen = ({ navigation }) => {
     : require("../../assets/images/Group2.png");
 
   const sendPhoto = () => {
-    console.log("navigation", navigation);
-    navigation.navigate("DefaultScreen", { photo });
+    // console.log("navigation", navigation);
+    uploadPhotoToServer();
+    navigation.navigate("Posts", { photo });
     setState(initialState);
     setPhoto(null);
   };
@@ -60,6 +63,19 @@ const CreateScreen = ({ navigation }) => {
   const resetForm = (e) => {
     setState(initialState);
     setPhoto(null);
+  };
+
+  const uploadPhotoToServer = async () => {
+    const response = await fetch(photo);
+    const file = await response.blob();
+
+    const uniquePostId = Date.now().toString();
+    const docRef = await addDoc(collection(db, `postImage`), {
+      name: "Photo",
+    });
+
+    // const data = await db.ref(`postImage/${uniquePostId}`).put(file);
+    // console.log("data", data);
   };
 
   return (
