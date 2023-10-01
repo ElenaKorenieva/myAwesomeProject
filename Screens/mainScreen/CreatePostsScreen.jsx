@@ -12,8 +12,10 @@ import {
 import { Camera } from "expo-camera";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
-import { db } from "../../firebase/config";
-import { doc, setDoc, collection, addDoc } from "firebase/firestore";
+import { db, storage } from "../../firebase/config";
+import { ref, uploadBytesResumable } from "firebase/storage";
+import getFilename from "../../utils/getFilename";
+import fetchLocalPhoto from "../../utils/fetchLocalPhoto";
 
 const initialState = {
   photoDescription: "",
@@ -66,13 +68,24 @@ const CreateScreen = ({ navigation }) => {
   };
 
   const uploadPhotoToServer = async () => {
+    // const storageName = "postImages";
+
+    // const file = await fetchLocalPhoto(photo);
+    // const filename = getFilename(photo);
+    // console.log("photo", photo);
+    // console.log("file", file);
+    // console.log("filename", filename);
+    // const imageRef = ref(storage, `${storageName}/${filename}`);
+    // console.log("ïmageRef", imageRef);
+
+    // const uploadTask = await uploadBytesResumable(imageRef, file);
+
     const response = await fetch(photo);
     const file = await response.blob();
-
     const uniquePostId = Date.now().toString();
-    const docRef = await addDoc(collection(db, `postImage`), {
-      name: "Photo",
-    });
+    const docRef = ref(storage, `postImage/${uniquePostId}`);
+
+    const uploadTask = await uploadBytesResumable(docRef, file);
 
     // const data = await db.ref(`postImage/${uniquePostId}`).put(file);
     // console.log("data", data);
