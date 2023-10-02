@@ -6,7 +6,7 @@ import { store } from "./redux/store";
 import { useEffect } from "react";
 import { auth } from "./firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
-import Main from "./components/Main.js";
+import Main from "./components/Main";
 
 export default function App() {
   const [fontsLoaded] = useFonts({

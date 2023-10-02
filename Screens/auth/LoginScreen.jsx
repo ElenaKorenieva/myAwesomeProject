@@ -19,8 +19,8 @@ import { useDispatch } from "react-redux";
 import { authSignInUser } from "../../redux/auth/authOperations";
 
 const initialState = {
-  email: "",
-  password: "",
+  email: "test@gmail.com",
+  password: "123456789",
 };
 
 export default function App({ navigation }) {

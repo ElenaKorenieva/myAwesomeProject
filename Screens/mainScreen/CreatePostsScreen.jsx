@@ -13,44 +13,53 @@ import { Camera } from "expo-camera";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
 import { db, storage } from "../../firebase/config";
-import { ref, uploadBytesResumable } from "firebase/storage";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { addDoc, collection, getDocs } from "firebase/firestore";
 import getFilename from "../../utils/getFilename";
 import fetchLocalPhoto from "../../utils/fetchLocalPhoto";
+import { useSelector } from "react-redux";
+import { useNavigation } from "@react-navigation/native";
 
 const initialState = {
-  photoDescription: "",
-  location: "",
+  title: "Photo1",
+  location: {
+    latitude: 0,
+    longitude: 0,
+  },
+  authorId: "",
+  place: "Amsterdam",
+  imgURL: "",
 };
 
-const CreateScreen = ({ navigation }) => {
+const CreateScreen = () => {
+  const navigation = useNavigation();
   const [camera, setCamera] = useState(null);
-  const [photo, setPhoto] = useState(null);
+  // const [photo, setPhoto] = useState(null);
   const [state, setState] = useState(initialState);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const { userId } = useSelector((state) => state.auth);
+  console.log("userId", userId);
 
   const takePhoto = async () => {
     const photo = await camera.takePictureAsync();
     const location = await Location.getCurrentPositionAsync();
     // console.log("location", location.coords.latitude);
     // console.log("location", location.coords.longitude);
+    // setState((prev) => ({
+    //   ...prev,
+    //   place: `latitude: ${location.coords.latitude}, longitude: ${location.coords.longitude}`,
+
+    // }));
     setState((prev) => ({
       ...prev,
-      location: `latitude: ${location.coords.latitude}, longitude: ${location.coords.longitude}`,
+      imgURL: photo.uri,
     }));
-    setPhoto(photo.uri);
-    // console.log("photo", photo);
   };
 
-  const btnImage = photo
+  const btnImage = state.imgURL
     ? require("../../assets/images/Group.png")
     : require("../../assets/images/Group2.png");
-
-  const sendPhoto = () => {
-    // console.log("navigation", navigation);
-    uploadPhotoToServer();
-    navigation.navigate("Posts", { photo });
-    setState(initialState);
-    setPhoto(null);
-  };
 
   useEffect(() => {
     (async () => {
@@ -58,38 +67,82 @@ const CreateScreen = ({ navigation }) => {
       console.log("status", status);
       if (status !== "granted") {
         setErrorMsg("Permission to access location was denied");
+      } else {
+        const location = await Location.getCurrentPositionAsync();
+
+        setState((prev) => ({
+          ...prev,
+          location: {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          },
+        }));
       }
     })();
   }, []);
 
+  useEffect(() => {
+    if (isSuccess) {
+      console.log("isSuccess", isSuccess);
+      navigation.goBack();
+    }
+  }, [isSuccess]);
+
   const resetForm = (e) => {
     setState(initialState);
-    setPhoto(null);
   };
 
   const uploadPhotoToServer = async () => {
-    // const storageName = "postImages";
+    setIsLoading(true);
+    const storageName = "postImages";
+    console.log("Upload photo");
 
-    // const file = await fetchLocalPhoto(photo);
-    // const filename = getFilename(photo);
-    // console.log("photo", photo);
-    // console.log("file", file);
-    // console.log("filename", filename);
-    // const imageRef = ref(storage, `${storageName}/${filename}`);
-    // console.log("ïmageRef", imageRef);
+    const file = await fetchLocalPhoto(state.imgURL);
+    const filename = getFilename(state.imgURL);
 
-    // const uploadTask = await uploadBytesResumable(imageRef, file);
+    console.log("file", file);
+    console.log("filename", filename);
+    const imageRef = ref(storage, `${storageName}/${filename}`);
+    console.log("imageRef", imageRef);
 
-    const response = await fetch(photo);
-    const file = await response.blob();
-    const uniquePostId = Date.now().toString();
-    const docRef = ref(storage, `postImage/${uniquePostId}`);
+    const uploadTask = await uploadBytesResumable(imageRef, file);
 
-    const uploadTask = await uploadBytesResumable(docRef, file);
-
-    // const data = await db.ref(`postImage/${uniquePostId}`).put(file);
-    // console.log("data", data);
+    if (uploadTask.state === "success") {
+      const imageURL = await getDownloadURL(imageRef);
+      const newPost = {
+        ...state,
+        authorID: userId,
+        imageURL,
+      };
+      await addDoc(collection(db, "posts"), newPost);
+      setIsSuccess(true);
+      setIsLoading(false);
+      return { data: true };
+    } else {
+      setIsLoading(false);
+      setIsSuccess(false);
+      return { error: { data: "post saving failed", status: 400 } };
+    }
   };
+
+  const getPhotoFromServer = async () => {
+    const photoFromServer = await getDocs(collection(db, "posts"));
+    console.log("photoFromServer", photoFromServer);
+    const postsList = [];
+
+    try {
+      photoFromServer.map((photo) => {
+        postsList.push({ postId: photo.id, post: photo.data() });
+        console.log("postsList", postsList);
+      });
+      return { data: postsList };
+    } catch (error) {
+      return { error: { data: "post getting failed", status: 400 } };
+    }
+  };
+
+  console.log("state", state);
+  getPhotoFromServer();
 
   return (
     <ScrollView
@@ -98,9 +151,9 @@ const CreateScreen = ({ navigation }) => {
     >
       <View style={styles.container}>
         <View style={styles.takePhotoContainer}>
-          {photo ? (
+          {state.imgURL ? (
             <Image
-              source={{ uri: photo }}
+              source={{ uri: state.imgURL }}
               style={{
                 width: 343,
                 height: 200,
@@ -116,7 +169,7 @@ const CreateScreen = ({ navigation }) => {
         </View>
 
         <View style={{ width: "82%" }}>
-          {!photo ? (
+          {!state.imgURL ? (
             <Text style={styles.wrapTitle}>Завантажте фото</Text>
           ) : (
             <Text style={styles.wrapTitle}>Редагувати фото</Text>
@@ -128,14 +181,14 @@ const CreateScreen = ({ navigation }) => {
             style={styles.input}
             placeholder="Назва..."
             placeholderTextColor="#BDBDBD"
-            value={state.photoDescription}
+            value={state.title}
             onChangeText={(value) =>
               setState((prev) => ({
                 ...prev,
-                photoDescription: value,
+                title: value,
               }))
             }
-            editable={photo ? true : false}
+            // editable={Boolean(state.imgURL)}
           />
         </View>
         <View style={{ width: "90%" }}>
@@ -149,14 +202,14 @@ const CreateScreen = ({ navigation }) => {
             style={styles.input_map}
             placeholder="Місцевість..."
             placeholderTextColor="#BDBDBD"
-            value={state.location}
+            value={state.place}
             onChangeText={(value) =>
               setState((prev) => ({
                 ...prev,
-                location: value,
+                place: value,
               }))
             }
-            editable={photo ? true : false}
+            // editable={Boolean(state.imgURL)}
           />
         </View>
         <View
@@ -168,9 +221,9 @@ const CreateScreen = ({ navigation }) => {
         >
           <View>
             <TouchableOpacity
-              onPress={sendPhoto}
+              onPress={(uploadPhotoToServer, getPhotoFromServer)}
               style={
-                photo
+                !!state.imgURL
                   ? styles.sendBtn
                   : {
                       marginTop: 43,
@@ -181,11 +234,11 @@ const CreateScreen = ({ navigation }) => {
                       cursor: "pointer",
                     }
               }
-              disabled={photo ? false : true}
+              disabled={!Boolean(state.imgURL)}
             >
               <Text
                 style={
-                  photo
+                  !!state.imgURL
                     ? styles.snapLabel
                     : {
                         textAlign: "center",
@@ -194,7 +247,7 @@ const CreateScreen = ({ navigation }) => {
                       }
                 }
               >
-                Опублікувати
+                {isLoading ? "Йде завантаження" : "Опублікувати"}
               </Text>
             </TouchableOpacity>
           </View>
