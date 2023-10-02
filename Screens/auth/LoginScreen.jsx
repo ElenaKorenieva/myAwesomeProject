@@ -15,9 +15,12 @@ import {
   Animated,
 } from "react-native";
 
+import { useDispatch } from "react-redux";
+import { authSignInUser } from "../../redux/auth/authOperations";
+
 const initialState = {
-  email: "",
-  password: "",
+  email: "test@gmail.com",
+  password: "123456789",
 };
 
 export default function App({ navigation }) {
@@ -30,11 +33,18 @@ export default function App({ navigation }) {
 
   const [state, setState] = useState(initialState);
 
-  const keyboardHide = () => {
+  const dispatch = useDispatch();
+
+  const handleSubmit = () => {
     setIsShownKeyboard(false);
     Keyboard.dismiss();
-    console.log(state);
+    dispatch(authSignInUser(state));
     setState(initialState);
+  };
+
+  const keyboardHide = () => {
+    Keyboard.dismiss();
+    setIsShownKeyboard(false);
   };
 
   useEffect(() => {
@@ -50,6 +60,7 @@ export default function App({ navigation }) {
       listenerHide.remove();
     };
   }, []);
+
   useEffect(() => {
     Animated.timing(position, {
       toValue: shift ? 90 : 50,
@@ -57,6 +68,7 @@ export default function App({ navigation }) {
       useNativeDriver: false,
     }).start();
   }, [shift]);
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -111,7 +123,7 @@ export default function App({ navigation }) {
             </View>
             <TouchableOpacity
               style={styles.button}
-              onPress={keyboardHide}
+              onPress={handleSubmit}
               activeOpacity={0.8}
             >
               <Text

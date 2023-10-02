@@ -16,6 +16,9 @@ import {
   Animated,
 } from "react-native";
 
+import { useDispatch } from "react-redux";
+import { authSignUpUser } from "../../redux/auth/authOperations";
+
 const initialState = {
   name: "",
   email: "",
@@ -33,10 +36,12 @@ export default function RegistrationScreen({ navigation }) {
 
   const [state, setState] = useState(initialState);
 
-  const keyboardHide = () => {
+  const dispatch = useDispatch();
+
+  const handleSubmit = () => {
     setIsShownKeyboard(false);
     Keyboard.dismiss();
-    console.log(state);
+    dispatch(authSignUpUser(state));
     setState(initialState);
   };
 
@@ -65,7 +70,7 @@ export default function RegistrationScreen({ navigation }) {
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <View style={styles.container} onPress={keyboardHide}>
+      <View style={styles.container} onPress={handleSubmit}>
         <StatusBar style="auto" />
         <ImageBackground
           source={require("../../assets/images/bgImage.png")}
@@ -135,7 +140,7 @@ export default function RegistrationScreen({ navigation }) {
             </View>
             <TouchableOpacity
               style={styles.button}
-              onPress={keyboardHide}
+              onPress={handleSubmit}
               activeOpacity={0.8}
             >
               <Text
